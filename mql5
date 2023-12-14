@@ -1,0 +1,122 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                           PRO Macd Predictor MT4 |
+//|                                   https://www.forexroboteasy.com |
+//|                                      Developed by Forex Robot Easy|
+//+------------------------------------------------------------------+
+
+#property strict
+
+// Calculate MACD
+void CalculateMACD(double &out macd[], double &out signal[], double &out histogram[])
+{
+    int period = 9;
+    double macdTemp[];
+    double signalTemp[];
+    
+    // Calculate MACD line
+    ArrayResize(macdTemp, Bars);
+    ArraySetAsSeries(macdTemp, true);
+    CopyBuffer(_Symbol, _Period, 0, Bars, macdTemp);
+    
+    // Calculate signal line
+    ArrayResize(signalTemp, Bars);
+    ArraySetAsSeries(signalTemp, true);
+    IndicatorCreate(_Symbol, _Period, MACD, period, PRICE_CLOSE);
+    IndicatorSetDouble(_Symbol, _Period, MACD, MODE_SIGNALPERIOD, period);
+    IndicatorSetDouble(_Symbol, _Period, MACD, MODE_SIGNALSMA, MODE_EMA);
+    CopyBuffer(_Symbol, _Period, 1, Bars, signalTemp);
+    
+    // Calculate histogram
+    ArrayResize(histogram, Bars);
+    ArraySetAsSeries(histogram, true);
+    for(int i = 0; i < Bars; i++)
+    {
+        histogram[i] = macdTemp[i] - signalTemp[i];
+    }
+}
+
+// Predict MACD line crossing
+double PredictMACDCrossing(double currentMacd, double previousMacd, double rateOfChange)
+{
+    double prediction = currentMacd + (currentMacd - previousMacd) * rateOfChange;
+    return NormalizeDouble(prediction, _Digits);
+}
+
+// Predict trend shifting
+double PredictTrendShifting(double currentMacd, double previousMacd, double rateOfChange)
+{
+    double prediction = currentMacd - (currentMacd - previousMacd) * rateOfChange;
+    return NormalizeDouble(prediction, _Digits);
+}
+
+// Study different timeframes
+void StudyTimeframes()
+{
+    // Implement timeframe study logic here
+}
+
+// Calculate distance between MACD Predictor line and last price
+double CalculateDistance(double macdPredictorLine, double lastPrice, double scalingFactor)
+{
+    double distance = (macdPredictorLine - lastPrice) * scalingFactor;
+    return NormalizeDouble(distance, _Digits);
+}
+
+// Analyze market pressures
+void AnalyzeMarketPressures()
+{
+    // Implement market pressure analysis logic here
+}
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    IndicatorShortName('PRO Macd Predictor MT4');
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Cleanup and deinitialization logic here
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    double macd[];
+    double signal[];
+    double histogram[];
+    
+    // Calculate MACD
+    CalculateMACD(macd, signal, histogram);
+    
+    // Predict MACD line crossing
+    double macdCrossing = PredictMACDCrossing(macd[0], macd[1], 0.5);
+    
+    // Predict trend shifting
+    double trendShifting = PredictTrendShifting(macd[0], macd[1], 0.5);
+    
+    // Study different timeframes
+    StudyTimeframes();
+    
+    // Calculate distance
+    double macdPredictorLine = macd[0] + signal[0];
+    double lastPrice = Close[0];
+    double scalingFactor = 1.0;
+    double distance = CalculateDistance(macdPredictorLine, lastPrice, scalingFactor);
+    
+    // Analyze market pressures
+    AnalyzeMarketPressures();
+    
+    // Place trading logic based on predictions, timeframe study, distance calculation, and market pressures
+}
+
+//+------------------------------------------------------------------+
